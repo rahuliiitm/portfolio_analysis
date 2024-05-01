@@ -1,0 +1,13 @@
+{
+  "editor.formatOnSave": true,
+  "eslint.lintTask.enable": true,
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "prettier.enable": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnPaste": false, // required
+  "editor.formatOnType": false, // required
+  "editor.formatOnSaveMode": "file",
+  "eslint.debug": true, // required to format on save
+  "typescript.preferences.importModuleSpecifier": "relative"
+}
