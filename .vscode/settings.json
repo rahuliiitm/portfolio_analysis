@@ -9,5 +9,6 @@
   "editor.formatOnType": false, // required
   "editor.formatOnSaveMode": "file",
   "eslint.debug": true, // required to format on save
-  "typescript.preferences.importModuleSpecifier": "relative"
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "cSpell.words": ["ohlc"]
 }

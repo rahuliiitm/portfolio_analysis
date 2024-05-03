@@ -17,10 +17,11 @@ export class StockDataRepository {
   async saveStockData(stockData: StockDataModel[]) {
     try {
       const stockDataEntities = this.mapper.toStockDataEntity(stockData, DataFrequency.WEEKLY)
-      return await this.dataSource.getRepository(StockDataEntity).save(stockDataEntities, {})
+      return await this.dataSource.getRepository(StockDataEntity).upsert(stockDataEntities, {
+        conflictPaths: ['stockSymbol', 'period', 'frequency'],
+      })
     } catch (error) {
       this.logger.error(`Error saving stock data with error ${error}`)
-      throw error
     }
   }
 }

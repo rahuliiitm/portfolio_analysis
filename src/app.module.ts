@@ -14,6 +14,8 @@ import { SuperTrendIndicator } from './indicators/supertrend.indictor'
 import { StockDataRepository } from './dal/stock.data.repository'
 import { StockDataMapper } from './mapper/stock.data.mapper'
 import { IIndicator } from './indicators/indicator.interface'
+import { AxiosRetryModule } from 'nestjs-axios-retry'
+import axiosRetry from 'axios-retry'
 
 export const indicatorProvider: Provider[] = [
   {
@@ -25,6 +27,16 @@ export const indicatorProvider: Provider[] = [
 
 @Module({
   imports: [
+    AxiosRetryModule.forRoot({
+      axiosRetryConfig: {
+        retries: 5,
+        retryDelay: axiosRetry.exponentialDelay,
+        shouldResetTimeout: true,
+        onRetry: (retryCount, error, requestConfig) => {
+          console.log(`Retrying request attempt ${retryCount}`)
+        },
+      },
+    }),
     HttpModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

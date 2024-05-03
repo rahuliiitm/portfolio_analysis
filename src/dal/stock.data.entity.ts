@@ -1,14 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToOne } from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm'
 import { DataFrequency } from '../model/data.frequency.enum'
 
-// "date": "2023-04-28",
-// "open": 74.75,
-// "high": 76.35,
-// "low": 74.45,
-// "close": 75.85,
-// "adjusted_close": 73.3793,
-// "volume": 13167053
 @Entity()
+@Index(['stockSymbol', 'period', 'frequency'], { unique: true })
 export class StockDataEntity {
   @PrimaryGeneratedColumn()
   id: number
@@ -48,4 +42,7 @@ export class StockDataEntity {
 
   @Column({ name: 'stock_technical_data', type: 'json' })
   stockTechnicalData: any
+
+  @Column({ name: 'modified_at', type: 'timestamp', nullable: true })
+  modifiedAt: Date
 }

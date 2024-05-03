@@ -23,31 +23,36 @@ export class StockDataService {
     private readonly stockDataRepository: StockDataRepository,
   ) {}
 
-  async fetchStockData() {
+  async fetchStockData(offset: number = 0): Promise<StockDataModel[]> {
     this.logger.debug('Fetching stock data')
     const dataPeriod = this.configService.get<string>('DATA_PERIOD')
     const apiKey = this.configService.get<string>('API_KEY')
     const apiResponseFormat = this.configService.get<string>('API_RESPONSE_FORMAT')
+    const limit = this.configService.get<number>('FETCH_LIMIT') || 20
     let stocksData: StockDataModel[] = []
-    for (const stock of this.stockList) {
-      const response = await this.getStockData(stock, dataPeriod, apiKey, apiResponseFormat)
-      const technicalData: { [key: string]: any } = {}
-      this.indicators.map((indicator) => {
-        let result = indicator.calculate(response, DataFrequency.WEEKLY)
-        this.logger.debug(`Indicator ${indicator.name()} for ${stock} is ${result}`)
-        technicalData[indicator.name()] = result
-      })
-      const stockData = new StockDataModel()
-      stockData.symbol = stock
-      stockData.name = Object.keys(StockSymbol).find((key) => StockSymbol[key] === stock)
-      stockData.ohlcData = response[response.length - 1]
-      stockData.technicalData = technicalData
-      stocksData.push(stockData)
-
-      this.logger.debug(`Fetched data for ${stock}`)
+    try {
+      for (let current = offset; current < limit && current < this.stockList.length; current++) {
+        const stock = this.stockList[current]
+        const response = await this.getStockData(stock, dataPeriod, apiKey, apiResponseFormat)
+        const technicalData: { [key: string]: any } = {}
+        this.indicators.map((indicator) => {
+          let result = indicator.calculate(response, DataFrequency.WEEKLY)
+          this.logger.debug(`Indicator ${indicator.name()} for ${stock} is ${result}`)
+          technicalData[indicator.name()] = result
+        })
+        const stockData = new StockDataModel()
+        stockData.symbol = stock
+        stockData.name = Object.keys(StockSymbol).find((key) => StockSymbol[key] === stock)
+        stockData.ohlcData = response[response.length - 1]
+        stockData.technicalData = technicalData
+        stocksData.push(stockData)
+        this.logger.debug(`Fetched data for ${stock}`)
+        await this.stockDataRepository.saveStockData([stockData])
+        this.logger.debug(`saved stocks data for symbol ${stock} with data  ${stocksData}`)
+      }
+    } catch (error) {
+      this.logger.error(`Error fetching data for with error ${error}`)
     }
-    await this.stockDataRepository.saveStockData(stocksData)
-    this.logger.debug('Fetched stock data')
     return stocksData
   }
 
@@ -57,17 +62,14 @@ export class StockDataService {
     apiKey: string,
     apiResponseFormat: string,
   ) {
-    const url = this.generateUrl(symbol, dataPeriod, apiKey, apiResponseFormat)
-    const response = await firstValueFrom(
-      this.httpService.get<OHLCDataModel[]>(url).pipe(
-        catchError((error: AxiosError) => {
-          this.logger.error(error.response.data)
-          throw error
-        }),
-      ),
-    )
-    this.logger.debug(`Fetched stock data for ${symbol}`)
-    return response.data
+    try {
+      const url = this.generateUrl(symbol, dataPeriod, apiKey, apiResponseFormat)
+      const response = await firstValueFrom(this.httpService.get<OHLCDataModel[]>(url))
+      this.logger.debug(`Fetched stock data for ${symbol}`)
+      return response.data
+    } catch (error) {
+      this.logger.error(`Error fetching data for ${symbol} with error ${error}`)
+    }
   }
 
   private generateUrl(
@@ -81,30 +83,4 @@ export class StockDataService {
     const url = `${baseUrl}/${symbol}.NSE?api_token=${apiKey}&period=${dataPeriod}&fmt=${apiResponseFormat}`
     return url
   }
-
-  // async getSuperTrendData() {
-  //   const stocksData = await this.getStockData()
-  //   const superTrendData: { name: string; data: any }[] = []
-  //   const superTrendPeriod: number = this.configService.get<number>('SUPER_TREND_PERIOD')
-  //   const superTrendMultiplier: number = this.configService.get<number>('SUPER_TREND_MULTIPLIER')
-  //   for (const stockData of stocksData) {
-  //     // take last 10 prices
-  //     const superTrendPrices = stockData.ohlcPrices.map((price) => {
-  //       return {
-  //         close: price.close,
-  //         high: price.high,
-  //         low: price.low,
-  //       }
-  //     })
-  //     const superTrend = supertrend({
-  //       initialArray: superTrendPrices,
-  //       period: superTrendPeriod,
-  //       multiplier: superTrendMultiplier,
-  //     })
-  //     this.logger.debug(superTrend)
-
-  //     superTrendData.push({ name: stockData.symbol, data: superTrend })
-  //   }
-  //   return superTrendData
-  // }
 }

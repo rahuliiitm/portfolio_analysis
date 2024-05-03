@@ -22,6 +22,7 @@ export class StockDataMapper {
       stockDataEntity.period = model.ohlcData.date
       stockDataEntity.stockTechnicalData = model.technicalData
       stockDataEntity.frequency = frequency
+      stockDataEntity.modifiedAt = new Date()
 
       return stockDataEntity
     })

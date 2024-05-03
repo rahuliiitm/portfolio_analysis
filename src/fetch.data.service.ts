@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
 import { Cron } from '@nestjs/schedule'
-import { Logger } from 'nestjs-pino'
 import { StockDataService } from './stock.data.service'
 import { PortfolioLogger } from './logger/portfolio.logger'
 
@@ -10,20 +8,39 @@ export class FetchDataService {
   private isDataFetched: boolean = false
   constructor(
     private readonly logger: PortfolioLogger,
-    private readonly configService: ConfigService,
     private readonly stockDataService: StockDataService,
   ) {}
 
-  // @Cron('0 */30 9-17 * * *')
-  @Cron('45 * * * * *')
-  async getWeeklyData() {
+  @Cron('0 0 1 * * 5')
+  async getWeeklyDataBatch1() {
     if (!this.isDataFetched) {
-      const response = await this.stockDataService.fetchStockData()
+      const response = await this.stockDataService.fetchStockData(0)
       this.isDataFetched = true
       this.logger.debug(
         `Fetched data for the week with ${response.length} stocks with response ${response}`,
       )
     }
-    this.logger.debug('Called every 45 seconds')
+  }
+
+  @Cron('0 0 1 * * 6')
+  async getWeeklyDataBatch2() {
+    if (this.isDataFetched) {
+      const response = await this.stockDataService.fetchStockData(20)
+      this.isDataFetched = false
+      this.logger.debug(
+        `Fetched data for the week with ${response.length} stocks with response ${response}`,
+      )
+    }
+  }
+
+  @Cron('0 0 1 * * 7')
+  async getWeeklyDataBatch3() {
+    if (!this.isDataFetched) {
+      const response = await this.stockDataService.fetchStockData(40)
+      this.isDataFetched = true
+      this.logger.debug(
+        `Fetched data for the week with ${response.length} stocks with response ${response}`,
+      )
+    }
   }
 }
