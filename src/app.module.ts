@@ -7,7 +7,7 @@ import { LoggerModule } from 'nestjs-pino'
 import { HttpModule } from '@nestjs/axios'
 import { StockList } from './stock.list'
 import { StockDataService } from './stock.data.service'
-import { FetchDataService } from './fetch.data.service'
+import { StockDataScheduler } from './stock.data.scheduler.'
 import { PortfolioLogger } from './logger/portfolio.logger'
 import { DatabaseModule } from './database/database.module'
 import { SuperTrendIndicator } from './indicators/supertrend.indictor'
@@ -16,12 +16,13 @@ import { StockDataMapper } from './mapper/stock.data.mapper'
 import { IIndicator } from './indicators/indicator.interface'
 import { AxiosRetryModule } from 'nestjs-axios-retry'
 import axiosRetry from 'axios-retry'
+import { RsiIndicator } from './indicators/rsi.indicator'
 
 export const indicatorProvider: Provider[] = [
   {
     provide: 'INDICATORS',
     useFactory: (...indicatorProvider: IIndicator[]) => indicatorProvider,
-    inject: [SuperTrendIndicator],
+    inject: [SuperTrendIndicator, RsiIndicator],
   },
 ]
 
@@ -90,12 +91,13 @@ export const indicatorProvider: Provider[] = [
       useValue: StockList,
     },
     StockDataService,
-    FetchDataService,
+    StockDataScheduler,
     PortfolioLogger,
     ...indicatorProvider,
     StockDataRepository,
     StockDataMapper,
     SuperTrendIndicator,
+    RsiIndicator,
   ],
 })
 export class AppModule {}

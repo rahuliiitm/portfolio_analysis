@@ -7,6 +7,7 @@ import { PortfolioLogger } from '../logger/portfolio.logger'
 import { Injectable } from '@nestjs/common'
 import { In } from 'typeorm'
 import { IndicatorType } from '../model/indicator.type.enum'
+import { RSI, rsi } from 'technicalindicators'
 
 @Injectable()
 export class SuperTrendIndicator implements IIndicator {
@@ -30,6 +31,7 @@ export class SuperTrendIndicator implements IIndicator {
     for (const stockData of data) {
       superTrendPrices.push({ close: stockData.close, high: stockData.high, low: stockData.low })
     }
+
     const superTrend = supertrend({
       initialArray: superTrendPrices,
       period: superTrendPeriod,

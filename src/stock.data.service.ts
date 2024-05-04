@@ -29,9 +29,14 @@ export class StockDataService {
     const apiKey = this.configService.get<string>('API_KEY')
     const apiResponseFormat = this.configService.get<string>('API_RESPONSE_FORMAT')
     const limit = this.configService.get<number>('FETCH_LIMIT') || 20
+    const limitAdjusted = offset + limit
     let stocksData: StockDataModel[] = []
     try {
-      for (let current = offset; current < limit && current < this.stockList.length; current++) {
+      for (
+        let current = offset;
+        current < limitAdjusted && current < this.stockList.length;
+        current++
+      ) {
         const stock = this.stockList[current]
         const response = await this.getStockData(stock, dataPeriod, apiKey, apiResponseFormat)
         const technicalData: { [key: string]: any } = {}
