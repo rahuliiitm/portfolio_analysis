@@ -30,7 +30,7 @@ export class StockDataService {
     const apiResponseFormat = this.configService.get<string>('API_RESPONSE_FORMAT')
     const limit = this.configService.get<number>('FETCH_LIMIT') || 20
     const limitAdjusted = offset + limit
-    let stocksData: StockDataModel[] = []
+
     try {
       for (
         let current = offset;
@@ -39,26 +39,30 @@ export class StockDataService {
       ) {
         const stock = this.stockList[current]
         const response = await this.getStockData(stock, dataPeriod, apiKey, apiResponseFormat)
-        const technicalData: { [key: string]: any } = {}
-        this.indicators.map((indicator) => {
-          let result = indicator.calculate(response, DataFrequency.WEEKLY)
-          this.logger.debug(`Indicator ${indicator.name()} for ${stock} is ${result}`)
-          technicalData[indicator.name()] = result
-        })
-        const stockData = new StockDataModel()
-        stockData.symbol = stock
-        stockData.name = Object.keys(StockSymbol).find((key) => StockSymbol[key] === stock)
-        stockData.ohlcData = response[response.length - 1]
-        stockData.technicalData = technicalData
-        stocksData.push(stockData)
-        this.logger.debug(`Fetched data for ${stock}`)
-        await this.stockDataRepository.saveStockData([stockData])
-        this.logger.debug(`saved stocks data for symbol ${stock} with data  ${stocksData}`)
+        let stocksData: StockDataModel[] = []
+        //  save last two weeks data for each stock
+        for (let i = 0; i < 2; i++) {
+          const technicalData: { [key: string]: any } = {}
+          this.indicators.map((indicator) => {
+            let result = indicator.calculate(response, i)
+            this.logger.debug(`Indicator ${indicator.name()} for ${stock} is ${result}`)
+            technicalData[indicator.name()] = result
+          })
+          const stockData = new StockDataModel()
+          stockData.symbol = stock
+          stockData.name = Object.keys(StockSymbol).find((key) => StockSymbol[key] === stock)
+          stockData.ohlcData = response[response.length - 1 - i]
+          stockData.technicalData = technicalData
+          stocksData.push(stockData)
+          this.logger.debug(`Fetched data for ${stock}`)
+          await this.stockDataRepository.saveStockData([stockData])
+          this.logger.debug(`saved stocks data for symbol ${stock} with data  ${stocksData}`)
+        }
       }
     } catch (error) {
       this.logger.error(`Error fetching data for with error ${error}`)
     }
-    return stocksData
+    return
   }
 
   private async getStockData(

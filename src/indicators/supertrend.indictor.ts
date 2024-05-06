@@ -20,11 +20,7 @@ export class SuperTrendIndicator implements IIndicator {
     return IndicatorType.SUPER_TREND
   }
 
-  calculate(
-    data: OHLCDataModel[],
-    timeframe: DataFrequency = DataFrequency.WEEKLY,
-    config?: any,
-  ): number {
+  calculate(data: OHLCDataModel[], weekFromLast: number, config?: any): number {
     const superTrendPeriod: number = this.configService.get<number>('SUPER_TREND_PERIOD')
     const superTrendMultiplier: number = this.configService.get<number>('SUPER_TREND_MULTIPLIER')
     let superTrendPrices = []
@@ -38,6 +34,6 @@ export class SuperTrendIndicator implements IIndicator {
       multiplier: superTrendMultiplier,
     })
     // return the last super trend value
-    return superTrend[superTrend.length - 1]
+    return superTrend[superTrend.length - 1 - weekFromLast]
   }
 }

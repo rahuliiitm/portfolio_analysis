@@ -11,10 +11,11 @@ export class RsiIndicator implements IIndicator {
     return 'rsi'
   }
 
-  calculate(data: OHLCDataModel[], timeframe: any, config?: any): any {
+  calculate(data: OHLCDataModel[], weekFromLast: number, config?: any): any {
     const period = this.configService.get<number>('RSI_PERIOD') || 14
+    const dataFromIndex = data.slice(0, data.length - weekFromLast)
     const input = {
-      values: data.map((d) => d.close),
+      values: dataFromIndex.map((d) => d.close),
       period: 14,
     }
     const rsiValue = rsi(input)

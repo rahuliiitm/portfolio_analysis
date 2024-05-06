@@ -66,25 +66,35 @@ export class StockDataRepository {
           close: stockData.close,
         })
       })
+      let stockToCheckManually: string[] = []
+      let filteredStocks: string[]
       const stockList = Object.keys(stocks)
       if (isTrendChangeDown) {
-        return stockList.filter((stock) => {
-          const stockData = stocks[stock]
-          return (
-            stockData[1].superTrend < stockData[1].close &&
-            stockData[0].superTrend > stockData[0].close &&
-            stockData[0].rsi < 65
-          )
-        })
-      } else {
-        return stockList.filter((stock) => {
+        filteredStocks = stockList.filter((stock) => {
+          if (stocks[stock].length < 2) {
+            stockToCheckManually.push(stock)
+            return false
+          }
           const stockData = stocks[stock]
           return (
             stockData[1].superTrend > stockData[1].close &&
             stockData[0].superTrend < stockData[0].close
           )
         })
+      } else {
+        filteredStocks = stockList.filter((stock) => {
+          const stockData = stocks[stock]
+          if (stocks[stock].length < 2) {
+            stockToCheckManually.push(stock)
+            return false
+          }
+          return (
+            stockData[1].superTrend < stockData[1].close &&
+            stockData[0].superTrend > stockData[0].close
+          )
+        })
       }
+      return [{ filteredStocks }, { stockToCheckManually }]
     } catch (error) {
       this.logger.error(`Error fetching stock data with error ${error}`)
       throw error

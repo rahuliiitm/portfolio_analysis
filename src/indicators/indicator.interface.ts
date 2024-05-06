@@ -3,5 +3,5 @@ import { OHLCDataModel } from '../model/ohlc.data.model'
 
 export interface IIndicator {
   name(): string
-  calculate(data: OHLCDataModel[], timeframe: DataFrequency, config?: any): number
+  calculate(data: OHLCDataModel[], weekFromLast: number, config?: any): number
 }
