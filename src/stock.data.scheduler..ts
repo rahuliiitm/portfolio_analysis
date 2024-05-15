@@ -10,8 +10,8 @@ export class StockDataScheduler {
     private readonly stockDataService: StockDataService,
   ) {}
 
-  @Cron('45 * * * * *')
-  //@Cron('0 0 1 * * 1-7')
+  //@Cron('45 * * * * *')
+  @Cron('0 0 1 * * 1-7')
   async getWeeklyDataBatch1() {
     const response = await this.stockDataService.fetchStockData()
     this.logger.debug(`Fetched data at ${new Date()} for the day`)
