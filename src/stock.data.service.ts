@@ -39,6 +39,10 @@ export class StockDataService {
       ) {
         const stock = this.stockList[current]
         const response = await this.getStockData(stock, dataPeriod, apiKey, apiResponseFormat)
+        if (!response) {
+          this.logger.error(`Error fetching data for ${stock}, continuing with next stock`)
+          continue
+        }
         let stocksData: StockDataModel[] = []
         //  save last two weeks data for each stock
         for (let i = 0; i < 2; i++) {
