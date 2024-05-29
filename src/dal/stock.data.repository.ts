@@ -115,10 +115,7 @@ export class StockDataRepository {
         })
       } else {
         stocksData.map((stockData) => {
-          if (
-            stockData.stock_technical_data.super_trend > stockData.close &&
-            stockData.stock_technical_data.rsi < 65
-          ) {
+          if (stockData.stock_technical_data.super_trend > stockData.close) {
             stocks.push(stockData.stock_symbol)
           }
         })
